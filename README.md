@@ -42,6 +42,7 @@ The language reference from the original AutoHotKey v1 `.chm` file, unpacked to 
 ## References
 
 - [AutoHotKey Parser](https://github.com/alfredomtx/tree-sitter-autohotkey)
+- [AutoHotKey Github](https://github.com/AutoHotkey/AutoHotkey)
 - [AutoHotKey v1 API](https://www.autohotkey.com/docs/v1/)
 - [JavaScript engine](https://github.com/DelSkayn/rquickjs)
 - [NAPI-RS framework](https://napi.rs)

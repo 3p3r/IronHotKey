@@ -487,6 +487,11 @@ napi_module!(
     ironhotkey_runtime::modules::screen,
     [
         ("ImageSearch", image_search),
+        ("MonitorGet", monitor_get),
+        ("MonitorGetCount", monitor_get_count),
+        ("MonitorGetName", monitor_get_name),
+        ("MonitorGetPrimary", monitor_get_primary),
+        ("MonitorGetWorkArea", monitor_get_work_area),
         ("PixelGetColor", pixel_get_color),
         ("PixelSearch", pixel_search),
         ("SysGet", sys_get),
