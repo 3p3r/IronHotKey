@@ -4,7 +4,21 @@
   "description": "IronHotKey is a port of AutoHotKey v1 to cross-platform Rust.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "format": "npm-run-all --parallel format:*",
+    "format:rust": "cargo fmt",
+    "format:js": "biome format --write",
+    "lint": "npm-run-all --parallel lint:*",
+    "lint:js": "biome lint --fix",
+    "setup": "cross-env NODE_OPTIONS='--import tsx' zx scripts/fetch-grammar.zx.ts",
+    "prebuild": "npm run setup",
+    "build": "cargo build",
+    "build:release": "cargo build --release",
+    "build:debug": "cargo build",
+    "docs": "serve reference/docs",
+    "test": "npm-run-all --parallel test:*",
+    "test:index": "cross-env NODE_OPTIONS='--import tsx' zx scripts/verify-index.zx.ts",
+    "test:rust": "cargo test",
+    "start": "cargo run -p ironhotkey-cli -- run"
   },
   "repository": {
     "type": "git",
@@ -12,13 +26,22 @@
   },
   "keywords": [],
   "author": "Sepehr Laal",
-  "license": "ISC",
-  "type": "commonjs",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/3p3r/IronHotKey/issues"
   },
   "homepage": "https://github.com/3p3r/IronHotKey#readme",
   "devDependencies": {
-    "serve": "^14.2.6"
+    "@biomejs/biome": "^2.4.7",
+    "@napi-rs/cli": "^2.18.4",
+    "@types/download": "^8.0.5",
+    "@types/node": "^25.5.0",
+    "cheerio": "^1.2.0",
+    "cross-env": "^10.1.0",
+    "download": "^8.0.0",
+    "npm-run-all": "^4.1.5",
+    "serve": "^14.2.6",
+    "tsx": "^4.21.0",
+    "zx": "^8.8.5"
   }
 }

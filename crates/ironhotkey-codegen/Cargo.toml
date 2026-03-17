@@ -1,0 +1,10 @@
+[package]
+name = "ironhotkey-codegen"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+ironhotkey-parser = { path = "../ironhotkey-parser" }
+ironhotkey-runtime = { path = "../ironhotkey-runtime" }
+thiserror.workspace = true

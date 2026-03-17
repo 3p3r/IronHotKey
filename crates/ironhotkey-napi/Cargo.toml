@@ -1,0 +1,16 @@
+[package]
+name = "ironhotkey-napi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ironhotkey-parser = { path = "../ironhotkey-parser" }
+ironhotkey-codegen = { path = "../ironhotkey-codegen" }
+ironhotkey-runtime = { path = "../ironhotkey-runtime" }
+serde_json.workspace = true
+napi.workspace = true
+napi-derive.workspace = true

@@ -1,0 +1,11 @@
+[package]
+name = "ironhotkey-parser"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+ironhotkey-grammar = { path = "../ironhotkey-grammar" }
+tree-sitter.workspace = true
+serde.workspace = true
+thiserror.workspace = true
