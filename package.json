@@ -1,0 +1,24 @@
+{
+  "name": "ironhotkey",
+  "version": "1.0.0",
+  "description": "IronHotKey is a port of AutoHotKey v1 to cross-platform Rust.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/3p3r/IronHotKey.git"
+  },
+  "keywords": [],
+  "author": "Sepehr Laal",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/3p3r/IronHotKey/issues"
+  },
+  "homepage": "https://github.com/3p3r/IronHotKey#readme",
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}
