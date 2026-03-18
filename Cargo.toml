@@ -18,10 +18,16 @@ license = "MIT"
 [workspace.dependencies]
 anyhow = "1.0"
 thiserror = "2.0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "=1.0.217", features = ["derive"] }
 serde_json = "1.0"
 tree-sitter = "0.25"
 rquickjs = { version = "0.8", features = ["bindgen", "classes", "properties", "parallel"] }
 clap = { version = "4.5", features = ["derive"] }
 napi = { version = "2", default-features = false, features = ["napi8", "serde-json"] }
 napi-derive = "2"
+swc_common = "8"
+swc_ecma_ast = "8"
+swc_ecma_codegen = "8"
+swc_ecma_parser = "10"
+swc_ecma_transforms_typescript = "11"
+swc_ecma_visit = "8"

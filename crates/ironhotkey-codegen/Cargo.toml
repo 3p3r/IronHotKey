@@ -8,3 +8,9 @@ license.workspace = true
 ironhotkey-parser = { path = "../ironhotkey-parser" }
 ironhotkey-runtime = { path = "../ironhotkey-runtime" }
 thiserror.workspace = true
+swc_common.workspace = true
+swc_ecma_ast.workspace = true
+swc_ecma_codegen.workspace = true
+swc_ecma_parser.workspace = true
+swc_ecma_transforms_typescript.workspace = true
+swc_ecma_visit.workspace = true

@@ -13,9 +13,19 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Run { script: String },
-    Parse { script: String },
-    Codegen { script: String },
+    Run {
+        script: String,
+    },
+    Parse {
+        script: String,
+    },
+    Codegen {
+        script: String,
+        #[arg(long, conflicts_with = "javascript")]
+        typescript: bool,
+        #[arg(long, conflicts_with = "typescript")]
+        javascript: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -25,7 +35,8 @@ fn main() -> Result<()> {
         Commands::Run { script } => {
             let source = fs::read_to_string(script)?;
             let ast = ironhotkey_parser::parse(&source)?;
-            let js = ironhotkey_codegen::codegen(&ast)?;
+            let ts = ironhotkey_codegen::codegen(&ast)?;
+            let js = ironhotkey_codegen::transpile(&ts)?;
             ironhotkey_runtime::run(&js)?;
         }
         Commands::Parse { script } => {
@@ -33,11 +44,21 @@ fn main() -> Result<()> {
             let ast = ironhotkey_parser::parse(&source)?;
             println!("{}", serde_json::to_string_pretty(&ast)?);
         }
-        Commands::Codegen { script } => {
+        Commands::Codegen {
+            script,
+            typescript,
+            javascript,
+        } => {
             let source = fs::read_to_string(script)?;
             let ast = ironhotkey_parser::parse(&source)?;
-            let js = ironhotkey_codegen::codegen(&ast)?;
-            println!("{js}");
+            let ts = ironhotkey_codegen::codegen(&ast)?;
+            if javascript {
+                let js = ironhotkey_codegen::transpile(&ts)?;
+                println!("{js}");
+            } else {
+                let _ = typescript;
+                println!("{ts}");
+            }
         }
     }
 

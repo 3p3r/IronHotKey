@@ -1,6 +1,7 @@
 use crate::commands;
 use crate::CodegenError;
 use ironhotkey_parser::ast::*;
+use ironhotkey_runtime::modules;
 
 pub struct Emitter;
 
@@ -41,7 +42,7 @@ impl Emitter {
 
         for function in &script.functions {
             out.push_str(&format!(
-                "function {}({}) {{\n",
+                "function {}({}): AhkResult {{\n",
                 function.name,
                 self.emit_params(&function.params)
             ));
@@ -107,6 +108,9 @@ impl Emitter {
         for statement in &script.auto_exec {
             self.emit_statement(statement, 0, &mut out)?;
         }
+
+        out.push_str("\n// --- AHK Runtime Type Definitions ---\n");
+        self.emit_type_definitions(&mut out);
 
         Ok(out)
     }
@@ -194,7 +198,7 @@ impl Emitter {
             } => {
                 let value = value.clone().unwrap_or_else(|| "v".to_string());
                 out.push_str(&format!(
-                    "{}for (const [{}, {}] of Object.entries({})) {{\n",
+                    "{}for (const [{}, {}] of Object.entries(({}) as Record<string, AhkValue>)) {{\n",
                     pad,
                     key,
                     value,
@@ -214,7 +218,7 @@ impl Emitter {
                             .transpose()?
                             .unwrap_or_else(|| "0".to_string());
                         out.push_str(&format!(
-                            "{}for (let A_Index = 1; A_Index <= {}; A_Index++) {{\n",
+                            "{}for (let A_Index: number = 1; A_Index <= Number({}); A_Index++) {{\n",
                             pad, count
                         ));
                     }
@@ -332,7 +336,7 @@ impl Emitter {
                 out.push_str(&format!("{}}}", pad));
                 if let Some(catch) = catch {
                     let var_name = catch.var.clone().unwrap_or_else(|| "e".to_string());
-                    out.push_str(&format!(" catch ({}) {{\n", var_name));
+                    out.push_str(&format!(" catch ({}: unknown) {{\n", var_name));
                     for inner in &catch.body {
                         self.emit_statement(inner, indent + 1, out)?;
                     }
@@ -592,7 +596,7 @@ impl Emitter {
             match member {
                 ClassMember::Method(method) => {
                     out.push_str(&format!(
-                        "  {}({}) {{\n",
+                        "  {}({}): AhkResult {{\n",
                         method.name,
                         self.emit_params(&method.params)
                     ));
@@ -608,12 +612,12 @@ impl Emitter {
                     getter,
                     setter,
                 } => {
-                    out.push_str(&format!("  get {}() {{\n", name));
+                    out.push_str(&format!("  get {}(): AhkResult {{\n", name));
                     for statement in getter {
                         self.emit_statement(statement, 2, out)?;
                     }
                     out.push_str("  }\n");
-                    out.push_str(&format!("  set {}(value) {{\n", name));
+                    out.push_str(&format!("  set {}(value: AhkValue) {{\n", name));
                     for statement in setter {
                         self.emit_statement(statement, 2, out)?;
                     }
@@ -625,7 +629,7 @@ impl Emitter {
                         .map(|e| self.emit_expr(e))
                         .transpose()?
                         .unwrap_or_else(|| "null".to_string());
-                    out.push_str(&format!("  {} = {};\n", name, value));
+                    out.push_str(&format!("  {}: AhkValue = {};\n", name, value));
                 }
                 ClassMember::StaticVar { name, value } => {
                     let value = value
@@ -633,7 +637,7 @@ impl Emitter {
                         .map(|e| self.emit_expr(e))
                         .transpose()?
                         .unwrap_or_else(|| "null".to_string());
-                    out.push_str(&format!("  static {} = {};\n", name, value));
+                    out.push_str(&format!("  static {}: AhkValue = {};\n", name, value));
                 }
                 ClassMember::NestedClass(nested) => {
                     self.emit_class(nested, out)?;
@@ -652,9 +656,64 @@ impl Emitter {
     fn emit_params(&self, params: &[Param]) -> String {
         params
             .iter()
-            .map(|param| param.name.clone())
+            .map(|param| {
+                if param.is_variadic {
+                    format!("...{}: AhkValue[]", param.name)
+                } else {
+                    format!("{}: AhkValue", param.name)
+                }
+            })
             .collect::<Vec<_>>()
             .join(", ")
+    }
+
+    fn emit_type_definitions(&self, out: &mut String) {
+        out.push_str("type AhkPrimitive = string | number | boolean | null;\n");
+        out.push_str("type AhkObject = { [key: string]: unknown };\n");
+        out.push_str("type AhkArray = AhkValue[];\n");
+        out.push_str("type AhkCallable = (...args: AhkValue[]) => AhkResult;\n");
+        out.push_str("type AhkClass = new (...args: AhkValue[]) => AhkObject;\n");
+        out.push_str("type AhkValue = AhkPrimitive | AhkObject | AhkArray | AhkCallable;\n");
+        out.push_str("type AhkResult = AhkValue | void;\n");
+        out.push_str("type AhkCallback = () => void;\n\n");
+
+        out.push_str("interface AhkPlatform {\n");
+        out.push_str("  readonly name: string;\n");
+        out.push_str("  init(): void;\n");
+        out.push_str("}\n\n");
+
+        for module in modules::all() {
+            let interface_name = module_interface_name(module.name);
+            out.push_str(&format!("interface {} {{\n", interface_name));
+            if module.name == "directives" {
+                out.push_str("  [name: string]: (...args: AhkValue[]) => AhkResult;\n");
+            }
+            for &(method_name, _) in module.methods {
+                if let Some(signature) = internal_signature(module.name, method_name) {
+                    out.push_str("  ");
+                    out.push_str(signature);
+                    out.push_str("\n");
+                } else {
+                    out.push_str(&format!(
+                        "  {}(...args: AhkValue[]): AhkResult;\n",
+                        method_name
+                    ));
+                }
+            }
+            out.push_str("}\n\n");
+        }
+
+        out.push_str("interface AhkRuntime {\n");
+        out.push_str("  readonly platform: AhkPlatform;\n");
+        for module in modules::all() {
+            out.push_str(&format!(
+                "  readonly {}: {};\n",
+                module.name,
+                module_interface_name(module.name)
+            ));
+        }
+        out.push_str("}\n\n");
+        out.push_str("declare const ahk: AhkRuntime;\n\n");
     }
 
     fn emit_target_name(&self, target: &Expr) -> String {
@@ -677,6 +736,69 @@ impl Emitter {
             Modifier::PassThrough => "PassThrough",
             Modifier::Hook => "Hook",
         }
+    }
+}
+
+fn module_interface_name(module_name: &str) -> &'static str {
+    match module_name {
+        "env" => "AhkEnv",
+        "ext" => "AhkExt",
+        "disk" => "AhkDisk",
+        "flow" => "AhkFlow",
+        "gui" => "AhkGui",
+        "maths" => "AhkMaths",
+        "mnk" => "AhkMnk",
+        "misc" => "AhkMisc",
+        "types" => "AhkTypes",
+        "process" => "AhkProcess",
+        "registry" => "AhkRegistry",
+        "screen" => "AhkScreen",
+        "sound" => "AhkSound",
+        "string" => "AhkString",
+        "window" => "AhkWindow",
+        "directives" => "AhkDirectives",
+        _ => "AhkUnknown",
+    }
+}
+
+fn internal_signature(module: &str, method: &str) -> Option<&'static str> {
+    match (module, method) {
+        ("env", "set") => Some("set(name: string, value: AhkValue): void;"),
+        ("env", "get") => Some("get(name: string): AhkValue;"),
+        ("env", "getBuiltIn") => Some("getBuiltIn(name: string): AhkValue;"),
+        ("env", "pushScope") => Some("pushScope(): void;"),
+        ("env", "popScope") => Some("popScope(): void;"),
+        ("env", "declareGlobal") => Some("declareGlobal(name: string, value?: AhkValue): void;"),
+        ("env", "declareLocal") => Some("declareLocal(name: string, value?: AhkValue): void;"),
+        ("env", "declareStatic") => Some("declareStatic(name: string, value?: AhkValue): void;"),
+        ("flow", "registerLabel") => Some("registerLabel(name: string, callback: AhkCallback): void;"),
+        ("flow", "registerFunction") => Some("registerFunction(name: string, fn: AhkCallable): void;"),
+        ("flow", "ifLegacy") => {
+            Some("ifLegacy(variant: string, variable: string, ...values: AhkValue[]): boolean;")
+        }
+        ("flow", "loopParse") => {
+            Some("loopParse(text: AhkValue, delimiters: AhkValue, callback: AhkCallback): void;")
+        }
+        ("flow", "loopFile") => {
+            Some("loopFile(pattern: AhkValue, mode: AhkValue, callback: AhkCallback): void;")
+        }
+        ("flow", "loopRead") => Some("loopRead(file: AhkValue, callback: AhkCallback): void;"),
+        ("flow", "loopReg") => {
+            Some("loopReg(rootKey: AhkValue, key: AhkValue, mode: AhkValue, callback: AhkCallback): void;")
+        }
+        ("flow", "goto") => Some("goto(label: string): never;"),
+        ("flow", "gosub") => Some("gosub(label: string): void;"),
+        ("mnk", "registerHotkey") => {
+            Some("registerHotkey(modifiers: string[], key: string, callback: AhkCallback): void;")
+        }
+        ("mnk", "registerHotstring") => {
+            Some("registerHotstring(trigger: string, options: string, replacement: string | AhkCallback): void;")
+        }
+        ("types", "addressOf") => Some("addressOf(value: AhkValue): AhkValue;"),
+        ("types", "deref") => Some("deref(value: AhkValue): AhkValue;"),
+        ("types", "registerClass") => Some("registerClass(name: string, cls: AhkClass): void;"),
+        ("string", "regexMatch") => Some("regexMatch(text: AhkValue, pattern: AhkValue): AhkValue;"),
+        _ => None,
     }
 }
 

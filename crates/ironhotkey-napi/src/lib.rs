@@ -26,8 +26,10 @@ pub fn codegen(source: String) -> Result<String> {
 pub fn run(source: String) -> Result<()> {
     let script = ironhotkey_parser::parse(&source)
         .map_err(|error| Error::from_reason(format!("parse failed: {error}")))?;
-    let js = ironhotkey_codegen::codegen(&script)
+    let ts = ironhotkey_codegen::codegen(&script)
         .map_err(|error| Error::from_reason(format!("codegen failed: {error}")))?;
+    let js = ironhotkey_codegen::transpile(&ts)
+        .map_err(|error| Error::from_reason(format!("transpile failed: {error}")))?;
     ironhotkey_runtime::run(&js)
         .map_err(|error| Error::from_reason(format!("runtime failed: {error}")))?;
     Ok(())

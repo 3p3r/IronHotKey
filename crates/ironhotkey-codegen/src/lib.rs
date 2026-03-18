@@ -1,9 +1,11 @@
 mod commands;
 mod emitter;
+mod transpile;
 
 use thiserror::Error;
 
 pub use emitter::Emitter;
+pub use transpile::transpile;
 
 #[derive(Debug, Error)]
 pub enum CodegenError {
