@@ -704,6 +704,7 @@ name = "ironhotkey-runtime"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "regex",
  "rquickjs",
  "serde_json",
 ]

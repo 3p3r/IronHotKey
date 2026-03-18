@@ -76,3 +76,42 @@ fn maths_function_codegen_and_runtime_pipeline() {
 
     ironhotkey_runtime::run(&js).expect("runtime should execute typed maths calls");
 }
+
+#[test]
+fn string_function_codegen_and_runtime_pipeline() {
+    let source = include_str!("../../../tests/fixtures/string.ahk");
+
+    let (script, ts, js) = compile_fixture(source);
+    assert!(!script.auto_exec.is_empty() || !script.directives.is_empty());
+    assert_eq!(script.auto_exec.len(), 47);
+
+    for expected in [
+        "ahk.string.InStr(\"Hello World\", \"o\");",
+        "ahk.string.StrLen(\"Hello\");",
+        "ahk.string.StrReplace(\"Hello World\", \"World\", \"AHK\");",
+        "ahk.string.SubStr(\"Hello World\", 1, 5);",
+        "ahk.string.Trim(\"  Hello  \");",
+        "ahk.string.LTrim(\"  Hello\");",
+        "ahk.string.RTrim(\"Hello  \");",
+        "ahk.string.RegExMatch(\"Hello123World\", \"\\\\\\\\d+\");",
+        "ahk.string.RegExReplace(\"test123test\", \"\\\\\\\\d+\", \"X\");",
+        "ahk.string.StringLen(\"Hello\");",
+        "ahk.string.StringUpper(\"hello\");",
+        "ahk.string.StringLower(\"HELLO\");",
+        "ahk.string.StringTrimLeft(\"Hello World\", 6);",
+        "ahk.string.StringTrimRight(\"Hello World\", 5);",
+        "ahk.string.StringLeft(\"Hello\", 2);",
+        "ahk.string.StringRight(\"Hello\", 3);",
+        "ahk.string.StringMid(\"Hello World\", 7, 5);",
+        "ahk.string.StringGetPos(\"Hello World\", \"World\");",
+        "ahk.string.StringReplace(\"Hello World\", \"World\", \"AHK\");",
+    ] {
+        assert!(ts.contains(expected), "missing TS snippet: {expected}");
+        assert!(
+            js.contains(expected.trim_end_matches(';')),
+            "missing JS snippet: {expected}"
+        );
+    }
+
+    ironhotkey_runtime::run(&js).expect("runtime should execute typed string calls");
+}

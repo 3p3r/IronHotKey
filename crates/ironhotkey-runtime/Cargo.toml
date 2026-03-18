@@ -8,3 +8,4 @@ license.workspace = true
 rquickjs.workspace = true
 anyhow.workspace = true
 serde_json.workspace = true
+regex = "1.10"
