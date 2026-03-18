@@ -508,7 +508,15 @@ impl Emitter {
                     .map(|arg| self.emit_expr(arg))
                     .collect::<Result<Vec<_>, _>>()?
                     .join(", ");
-                format!("{}({})", self.emit_expr(name)?, args)
+                if let Expr::Variable(function_name) = name.as_ref() {
+                    if let Some((module, method)) = commands::resolve(function_name) {
+                        format!("ahk.{}.{}({})", module, method, args)
+                    } else {
+                        format!("{}({})", self.emit_expr(name)?, args)
+                    }
+                } else {
+                    format!("{}({})", self.emit_expr(name)?, args)
+                }
             }
             Expr::MethodCall {
                 object,

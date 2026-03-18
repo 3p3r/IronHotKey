@@ -13,6 +13,10 @@ static ROUTE_MAP: LazyLock<HashMap<String, (&'static str, &'static str)>> = Lazy
     map
 });
 
+pub fn resolve(name: &str) -> Option<(&'static str, &'static str)> {
+    ROUTE_MAP.get(&name.trim().to_ascii_lowercase()).copied()
+}
+
 pub fn route(name: &str) -> (&'static str, String) {
     let key = name.trim().to_ascii_lowercase();
     match ROUTE_MAP.get(&key) {

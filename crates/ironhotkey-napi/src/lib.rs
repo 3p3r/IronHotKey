@@ -368,38 +368,163 @@ napi_module!(
     ]
 );
 
-napi_module!(
-    AhkMaths,
-    ironhotkey_runtime::modules::maths,
-    [
-        ("Abs", abs),
-        ("Asc", asc),
-        ("Chr", chr),
-        ("Format", format),
-        ("FormatTime", format_time),
-        ("Math", math),
-        ("NumGet", num_get),
-        ("NumPut", num_put),
-        ("Ord", ord),
-        ("Random", random),
-        ("Ceil", ceil),
-        ("Floor", floor),
-        ("Round", round),
-        ("Sqrt", sqrt),
-        ("Sin", sin),
-        ("Cos", cos),
-        ("Tan", tan),
-        ("ATan", a_tan),
-        ("Exp", exp),
-        ("Log", log),
-        ("Ln", ln),
-        ("Mod", mod_fn),
-        ("Max", max),
-        ("Min", min),
-        ("ASin", a_sin),
-        ("ACos", a_cos),
-    ]
-);
+#[napi]
+pub struct AhkMaths;
+
+#[napi]
+impl AhkMaths {
+    #[napi(constructor)]
+    pub fn new() -> Self {
+        Self
+    }
+
+    #[napi(js_name = "Abs")]
+    pub fn abs(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::abs(number)
+    }
+
+    #[napi(js_name = "ACos")]
+    pub fn a_cos(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::a_cos(number)
+    }
+
+    #[napi(js_name = "ASin")]
+    pub fn a_sin(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::a_sin(number)
+    }
+
+    #[napi(js_name = "Asc")]
+    pub fn asc(&self, text: String) -> String {
+        ironhotkey_runtime::modules::maths::asc(&text)
+    }
+
+    #[napi(js_name = "ATan")]
+    pub fn a_tan(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::a_tan(number)
+    }
+
+    #[napi(js_name = "Ceil")]
+    pub fn ceil(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::ceil(number)
+    }
+
+    #[napi(js_name = "Chr")]
+    pub fn chr(&self, code: u32) -> String {
+        ironhotkey_runtime::modules::maths::chr(code)
+    }
+
+    #[napi(js_name = "Cos")]
+    pub fn cos(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::cos(number)
+    }
+
+    #[napi(js_name = "Exp")]
+    pub fn exp(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::exp(number)
+    }
+
+    #[napi(js_name = "Floor")]
+    pub fn floor(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::floor(number)
+    }
+
+    #[napi(js_name = "Format")]
+    pub fn format(&self, format_str: String, values: Vec<String>) -> String {
+        let refs = values.iter().map(String::as_str).collect::<Vec<_>>();
+        ironhotkey_runtime::modules::maths::format(&format_str, &refs)
+    }
+
+    #[napi(js_name = "FormatTime")]
+    pub fn format_time(&self, timestamp: Option<String>, pattern: Option<String>) -> String {
+        ironhotkey_runtime::modules::maths::format_time(timestamp.as_deref(), pattern.as_deref())
+    }
+
+    #[napi(js_name = "Ln")]
+    pub fn ln(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::ln(number)
+    }
+
+    #[napi(js_name = "Log")]
+    pub fn log(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::log(number)
+    }
+
+    #[napi(js_name = "Math")]
+    pub fn math(&self, expression: String) -> String {
+        ironhotkey_runtime::modules::maths::math(&expression)
+    }
+
+    #[napi(js_name = "Max")]
+    pub fn max(&self, numbers: Vec<f64>) -> String {
+        ironhotkey_runtime::modules::maths::max(&numbers)
+    }
+
+    #[napi(js_name = "Min")]
+    pub fn min(&self, numbers: Vec<f64>) -> String {
+        ironhotkey_runtime::modules::maths::min(&numbers)
+    }
+
+    #[napi(js_name = "Mod")]
+    pub fn mod_fn(&self, dividend: f64, divisor: f64) -> String {
+        ironhotkey_runtime::modules::maths::mod_fn(dividend, divisor)
+    }
+
+    #[napi(js_name = "NumGet")]
+    pub fn num_get(
+        &self,
+        var_or_address: String,
+        offset: Option<i32>,
+        kind: Option<String>,
+    ) -> String {
+        ironhotkey_runtime::modules::maths::num_get(&var_or_address, offset, kind.as_deref())
+    }
+
+    #[napi(js_name = "NumPut")]
+    pub fn num_put(
+        &self,
+        number: f64,
+        var_or_address: String,
+        offset: Option<i32>,
+        kind: Option<String>,
+    ) -> String {
+        ironhotkey_runtime::modules::maths::num_put(
+            number,
+            &var_or_address,
+            offset,
+            kind.as_deref(),
+        )
+    }
+
+    #[napi(js_name = "Ord")]
+    pub fn ord(&self, text: String) -> String {
+        ironhotkey_runtime::modules::maths::ord(&text)
+    }
+
+    #[napi(js_name = "Random")]
+    pub fn random(&self, min: Option<f64>, max: Option<f64>) -> String {
+        ironhotkey_runtime::modules::maths::random(min, max)
+    }
+
+    #[napi(js_name = "Round")]
+    pub fn round(&self, number: f64, digits: Option<i32>) -> String {
+        ironhotkey_runtime::modules::maths::round(number, digits)
+    }
+
+    #[napi(js_name = "Sin")]
+    pub fn sin(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::sin(number)
+    }
+
+    #[napi(js_name = "Sqrt")]
+    pub fn sqrt(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::sqrt(number)
+    }
+
+    #[napi(js_name = "Tan")]
+    pub fn tan(&self, number: f64) -> String {
+        ironhotkey_runtime::modules::maths::tan(number)
+    }
+}
 
 napi_module!(
     AhkMisc,
