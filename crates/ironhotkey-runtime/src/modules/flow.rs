@@ -33,12 +33,6 @@ pub fn if_legacy(args: &[&str]) -> String {
 pub fn loop_parse(args: &[&str]) -> String {
     stub_log("flow", "loopParse", args)
 }
-pub fn loop_file(args: &[&str]) -> String {
-    stub_log("flow", "loopFile", args)
-}
-pub fn loop_read(args: &[&str]) -> String {
-    stub_log("flow", "loopRead", args)
-}
 pub fn loop_reg(args: &[&str]) -> String {
     stub_log("flow", "loopReg", args)
 }
@@ -55,7 +49,5 @@ pub const METHODS: &[ModuleMethod] = &[
     ("registerFunction", register_function),
     ("ifLegacy", if_legacy),
     ("loopParse", loop_parse),
-    ("loopFile", loop_file),
-    ("loopRead", loop_read),
     ("loopReg", loop_reg),
 ];

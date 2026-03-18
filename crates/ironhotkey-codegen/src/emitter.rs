@@ -210,7 +210,7 @@ impl Emitter {
                 out.push_str(&format!("{}}}\n", pad));
             }
             Statement::Loop { variant, body } => {
-                match variant {
+                let loop_footer = match variant {
                     LoopVariant::Count(expr) => {
                         let count = expr
                             .as_ref()
@@ -221,9 +221,11 @@ impl Emitter {
                             "{}for (let A_Index: number = 1; A_Index <= Number({}); A_Index++) {{\n",
                             pad, count
                         ));
+                        "}\n"
                     }
                     LoopVariant::Infinite => {
                         out.push_str(&format!("{}while (true) {{\n", pad));
+                        "}\n"
                     }
                     LoopVariant::Parse { string, delimiters } => {
                         let s = self.emit_expr(string)?;
@@ -236,6 +238,7 @@ impl Emitter {
                             "{}ahk.flow.loopParse({}, {}, () => {{\n",
                             pad, s, d
                         ));
+                        "});\n"
                     }
                     LoopVariant::File { pattern, mode } => {
                         let p = self.emit_expr(pattern)?;
@@ -245,16 +248,94 @@ impl Emitter {
                             .transpose()?
                             .unwrap_or_else(|| "\"\"".to_string());
                         out.push_str(&format!(
-                            "{}ahk.flow.loopFile({}, {}, () => {{\n",
+                            "{}const _loopFiles: Array<any> = JSON.parse(String(ahk.disk.LoopFile({}, {}) || \"[]\"));\n",
                             pad, p, m
                         ));
+                        out.push_str(&format!(
+                            "{}for (let A_Index: number = 1; A_Index <= _loopFiles.length; A_Index++) {{\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const _entry: Record<string, AhkValue> = _loopFiles[A_Index - 1] ?? {{}};\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileName: AhkValue = _entry.name ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileExt: AhkValue = _entry.ext ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileFullPath: AhkValue = _entry.fullPath ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFilePath: AhkValue = _entry.fullPath ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileLongPath: AhkValue = _entry.longPath ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileShortPath: AhkValue = _entry.shortPath ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileShortName: AhkValue = _entry.shortName ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileDir: AhkValue = _entry.dir ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileTimeModified: AhkValue = _entry.timeModified ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileTimeCreated: AhkValue = _entry.timeCreated ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileTimeAccessed: AhkValue = _entry.timeAccessed ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileAttrib: AhkValue = _entry.attrib ?? \"\";\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileSize: AhkValue = _entry.size ?? 0;\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileSizeKB: AhkValue = _entry.sizeKB ?? 0;\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopFileSizeMB: AhkValue = _entry.sizeMB ?? 0;\n",
+                            pad
+                        ));
+                        "}\n"
                     }
                     LoopVariant::Read { file } => {
+                        let f = self.emit_expr(file)?;
                         out.push_str(&format!(
-                            "{}ahk.flow.loopRead({}, () => {{\n",
-                            pad,
-                            self.emit_expr(file)?
+                            "{}const _loopReadLines: Array<any> = JSON.parse(String(ahk.disk.LoopReadFile({}) || \"[]\"));\n",
+                            pad, f
                         ));
+                        out.push_str(&format!(
+                            "{}for (let A_Index: number = 1; A_Index <= _loopReadLines.length; A_Index++) {{\n",
+                            pad
+                        ));
+                        out.push_str(&format!(
+                            "{}  const A_LoopReadLine: AhkValue = _loopReadLines[A_Index - 1] ?? \"\";\n",
+                            pad
+                        ));
+                        "}\n"
                     }
                     LoopVariant::Reg {
                         root_key,
@@ -278,12 +359,13 @@ impl Emitter {
                             k,
                             m
                         ));
+                        "});\n"
                     }
-                }
+                };
                 for inner in body {
                     self.emit_statement(inner, indent + 1, out)?;
                 }
-                out.push_str(&format!("{}}});\n", pad));
+                out.push_str(&format!("{}{}", pad, loop_footer));
             }
             Statement::Break { .. } => out.push_str(&format!("{}break;\n", pad)),
             Statement::Continue { .. } => out.push_str(&format!("{}continue;\n", pad)),

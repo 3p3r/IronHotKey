@@ -115,3 +115,34 @@ fn string_function_codegen_and_runtime_pipeline() {
 
     ironhotkey_runtime::run(&js).expect("runtime should execute typed string calls");
 }
+
+#[test]
+fn disk_function_codegen_and_runtime_pipeline() {
+    let source = include_str!("../../../tests/fixtures/disk.ahk");
+
+    let (script, ts, js) = compile_fixture(source);
+    assert!(!script.auto_exec.is_empty() || !script.directives.is_empty());
+
+    for expected in [
+        "ahk.disk.DriveGet(\"\", \"List\");",
+        "ahk.disk.DriveSpaceFree(\"\", \"/\");",
+        "ahk.disk.FileAppend(\"hello\", \"/tmp/ironhotkey_disk_fixture.txt\");",
+        "ahk.disk.FileRead(\"/tmp/ironhotkey_disk_fixture.txt\");",
+        "ahk.disk.FileReadLine(\"/tmp/ironhotkey_disk_fixture.txt\", 1);",
+        "ahk.disk.FileExist(\"/tmp/ironhotkey_disk_fixture.txt\");",
+        "ahk.disk.FileGetAttrib(\"/tmp/ironhotkey_disk_fixture.txt\");",
+        "ahk.disk.FileGetSize(\"/tmp/ironhotkey_disk_fixture.txt\", \"B\");",
+        "ahk.disk.FileGetTime(\"/tmp/ironhotkey_disk_fixture.txt\", \"M\");",
+        "ahk.disk.SplitPath(\"/tmp/ironhotkey_disk_fixture.txt\");",
+        "ahk.disk.LoopFile(\"/tmp/*\", \"F\");",
+        "ahk.disk.LoopReadFile(\"/tmp/ironhotkey_disk_fixture.txt\");",
+    ] {
+        assert!(ts.contains(expected), "missing TS snippet: {expected}");
+        assert!(
+            js.contains(expected.trim_end_matches(';')),
+            "missing JS snippet: {expected}"
+        );
+    }
+
+    ironhotkey_runtime::run(&js).expect("runtime should execute typed disk calls");
+}
