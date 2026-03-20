@@ -146,3 +146,86 @@ fn disk_function_codegen_and_runtime_pipeline() {
 
     ironhotkey_runtime::run(&js).expect("runtime should execute typed disk calls");
 }
+
+#[test]
+fn sound_function_codegen_and_runtime_pipeline() {
+    let source = include_str!("../../../tests/fixtures/sound.ahk");
+
+    let (script, ts, js) = compile_fixture(source);
+    assert!(!script.auto_exec.is_empty() || !script.directives.is_empty());
+
+    for expected in [
+        "ahk.sound.SoundBeep(523, 50);",
+        "ahk.sound.SoundBeep();",
+        "ahk.sound.SoundPlay(\"*-1\");",
+        "ahk.sound.SoundPlay(\"*16\");",
+        "ahk.sound.SoundGet(\"MASTER\", \"VOLUME\");",
+        "ahk.sound.SoundGet(\"MASTER\", \"MUTE\");",
+        "ahk.sound.SoundSet(\"50\", \"MASTER\", \"VOLUME\");",
+        "ahk.sound.SoundGetWaveVolume();",
+        "ahk.sound.SoundSetWaveVolume(\"50\");",
+    ] {
+        assert!(ts.contains(expected), "missing TS snippet: {expected}");
+        assert!(
+            js.contains(expected.trim_end_matches(';')),
+            "missing JS snippet: {expected}"
+        );
+    }
+
+    ironhotkey_runtime::run(&js).expect("runtime should execute typed sound calls");
+}
+
+#[test]
+fn process_function_codegen_and_runtime_pipeline() {
+    let source = include_str!("../../../tests/fixtures/process.ahk");
+
+    let (script, ts, js) = compile_fixture(source);
+    assert!(!script.auto_exec.is_empty() || !script.directives.is_empty());
+
+    for expected in [
+        "ahk.process.Process(\"Exist\");",
+        "ahk.process.Process(\"Exist\", \"999999999\");",
+        "ahk.process.Run(\"echo hello\");",
+        "ahk.process.RunWait(\"echo hello\");",
+        "ahk.process.RunAs();",
+    ] {
+        assert!(ts.contains(expected), "missing TS snippet: {expected}");
+        assert!(
+            js.contains(expected.trim_end_matches(';')),
+            "missing JS snippet: {expected}"
+        );
+    }
+
+    ironhotkey_runtime::run(&js).expect("runtime should execute typed process calls");
+}
+
+#[test]
+fn screen_function_codegen_and_runtime_pipeline() {
+    let source = include_str!("../../../tests/fixtures/screen.ahk");
+
+    let (script, ts, js) = compile_fixture(source);
+    assert!(!script.auto_exec.is_empty() || !script.directives.is_empty());
+
+    for expected in [
+        "ahk.screen.MonitorGetCount();",
+        "ahk.screen.MonitorGetPrimary();",
+        "ahk.screen.MonitorGetName();",
+        "ahk.screen.MonitorGet();",
+        "ahk.screen.MonitorGetWorkArea();",
+        "ahk.screen.SysGet(\"MonitorCount\");",
+        "ahk.screen.SysGet(\"MonitorPrimary\");",
+        "ahk.screen.SysGet(\"0\");",
+        "ahk.screen.SysGet(\"1\");",
+        "ahk.screen.PixelGetColor(0, 0, \"RGB\");",
+        "ahk.screen.PixelSearch(0, 0, 1, 1, \"0x000000\", 0);",
+        "ahk.screen.ImageSearch(0, 0, 1, 1, \"/nonexistent.png\");",
+    ] {
+        assert!(ts.contains(expected), "missing TS snippet: {expected}");
+        assert!(
+            js.contains(expected.trim_end_matches(';')),
+            "missing JS snippet: {expected}"
+        );
+    }
+
+    ironhotkey_runtime::run(&js).expect("runtime should execute typed screen calls");
+}

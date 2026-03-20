@@ -27,10 +27,10 @@ The following modules are provided as part of the runtime, available to other ru
 - [ ] Mouse and Keyboard (`ironhotkey/mnk`)
 - [ ] Misc. (`ironhotkey/misc`)
 - [ ] Object Types (`ironhotkey/types`)
-- [ ] Process (`ironhotkey/process`)
+- [x] Process (`ironhotkey/process`)
 - [ ] Registry (`ironhotkey/registry`)
-- [ ] Screen (`ironhotkey/screen`)
-- [ ] Sound (`ironhotkey/sound`)
+- [x] Screen (`ironhotkey/screen`)
+- [x] Sound (`ironhotkey/sound`)
 - [x] String (`ironhotkey/string`)
 - [ ] Window (`ironhotkey/window`)
 - [ ] #Directives (`ironhotkey/directives`)
@@ -45,6 +45,14 @@ The language reference from the original AutoHotKey v1 `.chm` file, unpacked to 
 	- `FileCreateShortcut` / `FileGetShortcut` use links on `*nix` platforms and `.lnk` on Windows.
 	- `Drive` uses native shell tooling on macOS for tray actions; `Lock` remains unsupported there.
 	- `FileSetTime` updates modified/accessed time cross-platform and supports creation-time (`C`) updates on Windows; non-Windows hosts may report creation-time updates as unsupported.
+- `ironhotkey/sound` platform notes:
+	- `SoundBeep` and `SoundPlay` silently return an empty string in headless environments without an audio output device.
+- `ironhotkey/screen` platform notes:
+	- `PixelGetColor`, `PixelSearch`, and `ImageSearch` in headless environments return an empty string.
+- `ironhotkey/process` platform notes:
+	- `Process, Priority` maps AHK priority levels (L/B/N/A/H/R) to Unix `nice` values on POSIX hosts. Priority elevation (negative nice) requires appropriate OS permissions.
+	- `RunAs` uses native alternate-credential process creation on Windows. On Unix hosts it only passes `SUDO_USER` as a child-process hint; true account switching is not implemented.
+	- `Run` / `RunWait` options `Min`, `Max`, and `Hide` are implemented as best-effort on non-Windows desktop environments. `Hide` detaches standard I/O, while `Min`/`Max` depend on window-manager accessibility/integration.
 
 ## References
 

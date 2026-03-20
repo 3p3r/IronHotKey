@@ -584,10 +584,10 @@ napi_module!(
     AhkProcess,
     ironhotkey_runtime::modules::process,
     [
-        ("Process", process),
-        ("Run", run_cmd),
-        ("RunAs", run_as),
-        ("RunWait", run_wait),
+        ("Process", compat_process_cmd),
+        ("Run", compat_run_cmd),
+        ("RunAs", compat_run_as),
+        ("RunWait", compat_run_wait),
     ]
 );
 
@@ -610,15 +610,15 @@ napi_module!(
     AhkScreen,
     ironhotkey_runtime::modules::screen,
     [
-        ("ImageSearch", image_search),
-        ("MonitorGet", monitor_get),
-        ("MonitorGetCount", monitor_get_count),
-        ("MonitorGetName", monitor_get_name),
-        ("MonitorGetPrimary", monitor_get_primary),
-        ("MonitorGetWorkArea", monitor_get_work_area),
-        ("PixelGetColor", pixel_get_color),
-        ("PixelSearch", pixel_search),
-        ("SysGet", sys_get),
+        ("ImageSearch", compat_image_search),
+        ("MonitorGet", compat_monitor_get),
+        ("MonitorGetCount", compat_monitor_get_count),
+        ("MonitorGetName", compat_monitor_get_name),
+        ("MonitorGetPrimary", compat_monitor_get_primary),
+        ("MonitorGetWorkArea", compat_monitor_get_work_area),
+        ("PixelGetColor", compat_pixel_get_color),
+        ("PixelSearch", compat_pixel_search),
+        ("SysGet", compat_sys_get),
     ]
 );
 
@@ -626,12 +626,12 @@ napi_module!(
     AhkSound,
     ironhotkey_runtime::modules::sound,
     [
-        ("SoundBeep", sound_beep),
-        ("SoundGet", sound_get),
-        ("SoundGetWaveVolume", sound_get_wave_volume),
-        ("SoundPlay", sound_play),
-        ("SoundSet", sound_set),
-        ("SoundSetWaveVolume", sound_set_wave_volume),
+        ("SoundBeep", compat_sound_beep),
+        ("SoundGet", compat_sound_get),
+        ("SoundGetWaveVolume", compat_sound_get_wave_volume),
+        ("SoundPlay", compat_sound_play),
+        ("SoundSet", compat_sound_set),
+        ("SoundSetWaveVolume", compat_sound_set_wave_volume),
     ]
 );
 

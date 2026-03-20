@@ -15,6 +15,17 @@ filetime = "0.2"
 rfd = "0.17"
 sys-info = "0.9"
 eject = "0.1.1"
+rodio = { version = "0.20", default-features = false, features = ["symphonia-all"] }
+sysinfo = "0.35"
+xcap = "0.0.14"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "bmp", "ico", "tiff"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+alsa = "0.9"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+coreaudio-sys = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }
+windows = { version = ">=0.59, <=0.62", features = ["Win32_Media_Audio", "Win32_Media_Audio_Endpoints", "Win32_System_Com", "Win32_System_Com_StructuredStorage"] }
